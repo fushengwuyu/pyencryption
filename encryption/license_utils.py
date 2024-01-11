@@ -226,6 +226,6 @@ if __name__ == '__main__':
     license_client.set_public_key(public_file='rsa_public.key')
     primsg = license_client.get_license(start=start_time, days=license_days, plat=app_id,
                                         private_file='rsa_private.key')
-
-    license_client.check_license(primsg)
+    print(primsg)
+    # license_client.check_license(primsg)
     # # LicenseService(license_server_url='http://192.168.16.7:34567/license/feature').check_license(t_cipher_text)

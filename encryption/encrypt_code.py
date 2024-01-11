@@ -4,13 +4,13 @@
 import os, time, shutil
 from distutils.core import setup
 from Cython.Build import cythonize
+from setuptools import find_packages
 import argparse
 
 parser = argparse.ArgumentParser(description='encrypt project')
 parser.add_argument("--except_dirs", help="except dirs", default='', type=str, nargs='+')
-
-parser.add_argument("--enc_dir", help="enc dir", default='.', type=str)
-parser.add_argument("--build_dir", help="build_dir", default='../build', type=str)
+parser.add_argument("--enc_dir", help="enc dir", default='/opt/sunshine/deploy/Dml/operator', type=str)
+parser.add_argument("--build_dir", help="build_dir", default='/opt/sunshine/deploy/Dml/operator_enc', type=str)
 parser.add_argument("--entrance", help="entrance", default='run.py', type=str)
 
 args = parser.parse_args()
@@ -20,11 +20,11 @@ start_time = time.time()
 curr_dir = args.enc_dir
 
 except_dirs = args.except_dirs
-excepts = []
-for d in except_dirs:
-    for root, dirs, files in os.walk(d):
-        for file in files:
-            excepts.append(os.path.join(root, file))
+# excepts = []
+# for d in except_dirs:
+#     for root, dirs, files in os.walk(d):
+#         for file in files:
+#             excepts.append(os.path.join(root, file))
 
 build_dir = args.build_dir
 build_tmp_dir = build_dir + "/temp"
@@ -33,36 +33,12 @@ s = "# cython: language_level=3"
 entrance = args.entrance
 
 
-# def get_py(base_path=os.path.abspath('..'), parent_path='', name='', excepts=(), copyOther=False, delC=False):
-#     """
-#     获取py文件的路径
-#     :param base_path: 根路径
-#     :param parent_path: 父路径
-#     :param excepts: 排除文件
-#     :return: py文件的迭代器
-#     """
-#     full_path = os.path.join(base_path, parent_path, name)
-#     for filename in os.listdir(full_path):
-#         full_filename = os.path.join(full_path, filename)
-#         if os.path.isdir(full_filename) and filename != build_dir and not filename.startswith('.'):
-#             for f in get_py(base_path, os.path.join(parent_path, name), filename, excepts, copyOther, delC):
-#                 yield f
-#         elif os.path.isfile(full_filename):
-#             ext = os.path.splitext(filename)[1]
-#             if ext == ".c":
-#                 if delC and os.stat(full_filename).st_mtime > start_time:
-#                     os.remove(full_filename)
-#             elif full_filename not in excepts and os.path.splitext(filename)[1] not in ('.pyc', '.pyx'):
-#                 if os.path.splitext(filename)[1] in ('.py', '.pyx') and not filename.startswith('__'):
-#                     path = os.path.join(parent_path, name, filename)
-#                     yield path
-#         else:
-#             pass
-
-
 def get_py(base_path=os.path.abspath('..'), excepts=(), delC=False):
     pys = []
     for root, dirs, files in os.walk(base_path):
+        if any([root.__contains__(e) for e in excepts]):
+            continue
+
         for file in files:
             filename = os.path.join(root, file)
             ext = os.path.splitext(filename)[1]
@@ -77,12 +53,14 @@ def get_py(base_path=os.path.abspath('..'), excepts=(), delC=False):
 
 def pack_pyd():
     # 获取py列表
-    # module_list = list(get_py(base_path=curr_dir, parent_path='', excepts=excepts, copyOther=True, delC=True))
-    module_list = get_py(base_path=curr_dir, excepts=excepts, delC=True)
+    module_list = get_py(base_path=curr_dir, excepts=except_dirs, delC=True)
+    for l in module_list:
+        print(l)
     try:
         setup(
             ext_modules=cythonize(module_list, compiler_directives={'language_level': "3"}),
             script_args=["build_ext", "-b", build_dir, "-t", build_tmp_dir],
+            packages=find_packages(),
         )
     except Exception as ex:
         print("error! ", str(ex))

@@ -5,8 +5,8 @@ with open("readme.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pyencryption",
-    version="0.1",
+    name="encryptKit",
+    version="0.2",
     author="sunshine",
     author_email="",
     description="python project encryption",
