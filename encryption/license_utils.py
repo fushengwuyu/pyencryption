@@ -118,7 +118,7 @@ class LicenseService(BaseModel):
             raise Exception('证书验证失败，请使用授权的服务器！')
         return sens['expired']
 
-    def get_license(self, start, days, plat, private_file):
+    def get_license(self, start, days, plat, private_file, ):
         start_date = datetime.strptime(start, self.time_format)
         expired_date = start_date + timedelta(days=days)
 
